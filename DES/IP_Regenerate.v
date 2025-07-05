@@ -64,21 +64,19 @@ generate
     end
 endgenerate
 // 生成ready信号
-//逻辑是在转换完成后将ready信号置为1，能否通过标志位来控制ready信号的生成
-// 这里假设start信号为1时表示开始转换，转换完成后ready信号为1
-reg [1:64] ref;
+// 修正逻辑：当start信号有效且转换完成后，ready信号置1
+reg ready_reg;
 
 always @(posedge clk or negedge rst_n) begin
-    ref = LRCombine;
     if (!rst_n) begin
-        ready <= 0;
+        ready_reg <= 0;
     end else if (start) begin
-        if (LRCombine == desOut)
-            ready <= 0;
-        else    ready <= 1; // 假设转换完成后ready信号为1
+        ready_reg <= 1; // start信号有效时，下一个时钟周期ready为1
     end else begin
-        ready <= 0; // 如果不是start状态，则ready信号为0
+        ready_reg <= 0;
     end
 end
+
+assign ready = ready_reg;
 
 endmodule
