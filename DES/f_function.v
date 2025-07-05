@@ -1,10 +1,5 @@
 //***********************module f_function(
-    input clk, //时钟信号;
-    input rst_n, //复位信号;
-    input [1:48] Keyin,
-    input [1:32] RDatain, //输入的32位数据;
-    output reg [1:32] f_out //输出的32位数据                   
-);**********VSCODE PLUG-IN**********************************//
+
 //----------------------------------------------------------------------------------------
 // IDE :                   VSCODE     
 // VSCODE plug-in version: Verilog-Hdl-Format-3.6.20250620
@@ -181,8 +176,7 @@ endgenerate
                 S_out[29:32]<=S_table8[{S_in[8][1], S_in[8][6], S_in[8][2:5]} + 1]; //S盒8
             end                                   
         end
-            end                                   
-        end
+          
 // P变换表声明 - 32个5位元素(1~32)的数组
 reg [4:0] PTable [1:32];
 initial begin
