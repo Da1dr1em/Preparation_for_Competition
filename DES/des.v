@@ -29,143 +29,17 @@ module des(
     input [1:64] desIn,keyIn, //输入的明文和密钥 
     output ready,
     output [1:64] desOut 
-);                                            
-wire [1:64] SwappedIpData;   
-IP_Swap IP_Swap_inst (
+);
+
+// 使用新的F函数控制器来处理整个DES加密过程
+f_function_controller f_controller_inst (
     .clk(clk),
     .rst_n(rst_n),
     .start(start),
     .desIn(desIn),
-    .IPOut(SwappedIpData)
-);
-//拆分打散后的数组
-reg [1:32] LData,RData;
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        LData <= 32'b0;
-        RData <= 32'b0;
-    end else if (start) begin
-        LData <= SwappedIpData[1:32];
-        RData <= SwappedIpData[33:64];
-    end
-end
-
-reg [1:48] subkey[1:16];
-wire [1:48] subkey_wire[1:16]; // 添加wire类型的中间信号
-genvar i;
-integer j; // 声明整数变量
-//生成16个私钥
-generate
-    for (i = 1; i <= 16; i = i + 1) begin : key_gen_loop
-        Branch_Key_Generate Branch_Key_Generate_inst (
-            .clk(clk),
-            .rst_n(rst_n),
-            .start(start),
-            .keyid(6'd0 + i), // 明确指定6位宽度
-            .keyIn(keyIn),
-            .branchkey(subkey_wire[i]) // 连接到wire类型
-        );
-    end
-endgenerate
-
-// 将wire信号赋值给reg - 移到generate块外面
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        for (j = 1; j <= 16; j = j + 1) begin
-            subkey[j] <= 48'b0;
-        end
-    end else begin
-        for (j = 1; j <= 16; j = j + 1) begin
-            subkey[j] <= subkey_wire[j];
-        end
-    end
-end
-//下一步是编写并使用f函数
-
-// 状态控制和轮计数
-reg [4:0] round_count; // 1-16轮计数
-reg [2:0] state; // 状态机：0-空闲，1-加密中，2-完成
-parameter IDLE = 3'b000, ENCRYPTING = 3'b001, DONE = 3'b010;
-
-// 16轮加密的中间变量
-reg [1:32] L_current, R_current;
-reg [1:32] L_next, R_next;
-wire [1:32] f_output;
-reg start_f_function;
-
-// F函数实例化 - 添加有效轮数检查
-f_function f_function_inst (
-    .clk(clk),
-    .rst_n(rst_n),
-    .Keyin(round_count > 0 && round_count <= 16 ? subkey[round_count] : 48'b0),
-    .RDatain(R_current),
-    .f_out(f_output)
-);
-
-// 状态机控制
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        state <= IDLE;
-        round_count <= 5'b0;
-        L_current <= 32'b0;
-        R_current <= 32'b0;
-        L_next <= 32'b0;
-        R_next <= 32'b0;
-        start_f_function <= 1'b0;
-    end else begin
-        case (state)
-            IDLE: begin
-                if (start) begin
-                    state <= ENCRYPTING;
-                    round_count <= 5'd1;
-                    L_current <= LData;
-                    R_current <= RData;
-                    start_f_function <= 1'b1;
-                end
-            end
-            
-            ENCRYPTING: begin
-                if (round_count == 5'd16) begin
-                    // 最后一轮完成，保存最终结果
-                    L_next <= R_current;
-                    R_next <= L_current ^ f_output;
-                    state <= DONE;
-                    start_f_function <= 1'b0;
-                end else begin
-                    // 继续下一轮
-                    L_current <= R_current;
-                    R_current <= L_current ^ f_output;
-                    round_count <= round_count + 1'b1;
-                end
-            end
-            
-            DONE: begin
-                if (!start) begin
-                    state <= IDLE;
-                    round_count <= 5'b0;
-                end
-            end
-            
-            default: state <= IDLE;
-        endcase
-    end
-end
-
-// 16轮后的L、R组合（注意：最后一轮不交换L、R）
-wire [1:64] final_LR;
-assign final_LR = {R_next, L_next}; // 最后一轮后R在左，L在右
-
-// IP逆置换
-wire ip_regen_ready;
-IP_Regenerate IP_Regenerate_inst (
-    .clk(clk),
-    .rst_n(rst_n),
-    .start(state == DONE),
-    .LRCombine(final_LR),
-    .ready(ip_regen_ready),
+    .keyIn(keyIn),
+    .ready(ready),
     .desOut(desOut)
 );
 
-// ready信号生成
-assign ready = (state == DONE) && ip_regen_ready;
 endmodule
