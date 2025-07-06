@@ -74,6 +74,7 @@ module des_tb;
 
   //always #5 dut_clk = ~dut_clk; // 100MHz
   always #4 dut_clk = ~dut_clk; // 125MHz
+  always #10000 dut_start=~dut_start;
   //always #3 dut_clk = ~dut_clk; // 166MHz
 
   initial begin
