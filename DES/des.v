@@ -51,15 +51,24 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 reg [1:48] subkey[1:16];
+reg [5:0] keyidset[1:16]; // 用于生成私钥的ID
 genvar i;
 //生成16个私钥
 generate
     for (i = 1; i <= 16; i = i + 1) begin : key_gen_loop
+        // 设置keyidset[i]为i
+        always @(posedge clk or negedge rst_n) begin
+            if (!rst_n) begin
+                keyidset[i] <= 6'b0;
+            end else if (start) begin
+                keyidset[i] <= i; // 设置keyid为1~16
+            end
+        end
         Branch_Key_Generate Branch_Key_Generate_inst (
             .clk(clk),
             .rst_n(rst_n),
             .start(start),
-            .keyid(i),
+            .keyid(keyidset[i]), // 使用keyidset[i]作为keyid
             .keyIn(keyIn),
             .branchkey(subkey[i])
         );
