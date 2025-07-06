@@ -28,8 +28,11 @@ module Branch_Key_Generate(
     input clk,rst_n,start,
     input [5:0] keyid, //要求生成的私钥ID(1~16)
     input [1:64] keyIn, //输入的公钥       
-    output reg [1:48] branchkey //生成48位私钥
+    output [1:48] branchkey //生成48位私钥 - 改为wire类型
 );
+
+// 内部reg信号
+reg [1:48] branchkey_reg;
 //对密钥进行初始置换A
 reg [1:56] keyA;
 reg [5:0] keySwapA[1:56];
@@ -64,22 +67,25 @@ generate
 endgenerate
 
 //对密钥进行C、D拆分和循环左移
-reg [1:28] C,Ci; //C部分
-reg [1:28] D,Di; //D部分
+reg [1:28] C,D; //C、D部分
+wire [1:28] Ci,Di; //循环左移后的C、D，改为wire类型
+reg start_dly; // start信号延迟
+
 //核心思路是先把keyA拆分为C、D，然后根据输入的keyid进行循环左移得到要的Ci和Di
-    always @(posedge clk or negedge rst_n)           
-        begin                                        
-            if(!rst_n)                               
-                begin
-                    C <= 28'b0;                    
-                    D <= 28'b0;                    
-                end                                   
-            else if(start)                            
-                begin                                
-                    C <= keyA[1:28];                 
-                    D <= keyA[29:56];                
-                end                                                                     
-        end                                          
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        C <= 28'b0;
+        D <= 28'b0;
+        start_dly <= 1'b0;
+    end else begin
+        start_dly <= start;
+        if(start && !start_dly) begin  // start上升沿
+            C <= keyA[1:28];
+            D <= keyA[29:56];
+        end
+    end
+end
+
 //现在我们得到了C0、D0，接下来按照keyid进行循环左移
 left_loop left_loop_inst(
     .clk(clk),
@@ -87,14 +93,15 @@ left_loop left_loop_inst(
     .C0(C),
     .D0(D),
     .keyid(keyid),
-    .Ci(Ci), //循环左移后的C
-    .Di(Di)  //循环左移后的D
+    .Ci(Ci), //循环左移后的C - wire类型
+    .Di(Di)  //循环左移后的D - wire类型
 );
+
 reg [1:56] CombinedCD; //组合C和D
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         CombinedCD <= 56'b0;
-    end else if (start) begin
+    end else if (start_dly) begin  // 使用延迟的start信号
         CombinedCD <= {Ci, Di}; //组合C和D
     end
 end
@@ -118,13 +125,16 @@ generate
     for (j = 1; j <= 48; j = j + 1) begin : keySwapB_loop
         always @(posedge clk or negedge rst_n) begin
             if (!rst_n) begin
-                branchkey[j] <= 0;
-            end else if (start) begin
-                branchkey[j] <= CombinedCD[keySwapBTable[j]];
+                branchkey_reg[j] <= 1'b0;
+            end else if (start_dly) begin  // 使用延迟的start信号确保时序正确
+                branchkey_reg[j] <= CombinedCD[keySwapBTable[j]];
             end
         end
     end
 endgenerate
+
+// 将内部reg信号连接到输出端口
+assign branchkey = branchkey_reg;
 
 
 endmodule

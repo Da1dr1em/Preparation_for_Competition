@@ -1,0 +1,181 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dD:/Working/Preparation_for_Competition
+vBranch_Key_Generate
+Z1 DXx6 sv_std 3 std 0 22 AD7iAPLo6nTIKk<N0eo=D3
+Z2 !s110 1751767282
+!i10b 1
+!s100 zN5U<b8X_f?g@@oGi?CRe0
+I38_V0X7ELkD`0dzeDaomA1
+Z3 VDg1SIo80bB@j0V0VzS_@n1
+!s105 Branch_Key_Generate_v_unit
+S1
+R0
+w1751767274
+8./DES/Branch_Key_Generate.v
+F./DES/Branch_Key_Generate.v
+Z4 L0 27
+Z5 OL;L;10.5;63
+r1
+!s85 0
+31
+Z6 !s108 1751767282.000000
+Z7 !s107 ./DES/left_loop.v|./DES/IP_Swap.v|./DES/IP_Regenerate.v|./DES/f_function.v|./DES/des_tb.v|./DES/des.v|./DES/Branch_Key_Generate.v|
+Z8 !s90 -sv|./DES/Branch_Key_Generate.v|./DES/des.v|./DES/des_tb.v|./DES/f_function.v|./DES/IP_Regenerate.v|./DES/IP_Swap.v|./DES/left_loop.v|
+!i113 0
+Z9 o-sv -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z10 tCvgOpt 0
+n@branch_@key_@generate
+vdes
+R1
+R2
+!i10b 1
+!s100 3?l8PDF8bDa>jV7b;5E9g1
+IYLRB>JEiP4dbPI4fP?o_B2
+R3
+!s105 des_v_unit
+S1
+R0
+w1751767275
+8./DES/des.v
+F./DES/des.v
+R4
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+vdes_tb
+R1
+R2
+!i10b 1
+!s100 WkEkOj7Li4Nc3f4GNQl5f2
+IJ;l`H1^;U>MoF>67LfYJz1
+R3
+!s105 des_tb_v_unit
+S1
+R0
+w1751684079
+8./DES/des_tb.v
+F./DES/des_tb.v
+L0 36
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+vf_function
+R1
+R2
+!i10b 1
+!s100 TQkH:dCQ[eWMfoVO[BQDT2
+IM<c6g;k38LMF67]gfTE@h1
+R3
+!s105 f_function_v_unit
+S1
+R0
+w1751767277
+8./DES/f_function.v
+F./DES/f_function.v
+R4
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+vIP_Regenerate
+R1
+R2
+!i10b 1
+!s100 <bACAhOdmNR?<zTe]_LIJ3
+I9al?FD:MNFN9`5UW?NVWh3
+R3
+!s105 IP_Regenerate_v_unit
+S1
+R0
+w1751766058
+8./DES/IP_Regenerate.v
+F./DES/IP_Regenerate.v
+Z11 L0 26
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@i@p_@regenerate
+vIP_Swap
+R1
+R2
+!i10b 1
+!s100 XV5^j=a`8[2B=VbjhRT]S0
+I]Uc@ozi=;hamZz<4HNN?E3
+R3
+!s105 IP_Swap_v_unit
+S1
+R0
+w1751709253
+8./DES/IP_Swap.v
+F./DES/IP_Swap.v
+R11
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@i@p_@swap
+vleft_loop
+R1
+R2
+!i10b 1
+!s100 7E4Ok3zz2?>`IW`fIF0lR0
+IOSJ4:2I=mdk<enXd9T6NA1
+R3
+!s105 left_loop_v_unit
+S1
+R0
+w1751767272
+8./DES/left_loop.v
+F./DES/left_loop.v
+R11
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10

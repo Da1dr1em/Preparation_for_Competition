@@ -29,7 +29,7 @@ module f_function(
     input rst_n, //复位信号;
     input [1:48] Keyin,
     input [1:32] RDatain, //输入的32位数据;
-    output reg [1:32] f_out //输出的48位数据                   
+    output reg [1:32] f_out //输出的32位数据                   
 );
 //F函数由四个部分组成：对Rdata进行E变换扩展，结果与Keyin进行异或运算，最后对结果进行S盒变换和P变换得到32位输出
 // E变换表声明 - 48个6(1~32)位元素的数组
@@ -159,23 +159,31 @@ generate
         assign S_in[j] = Sin[(j-1)*6 + 1: j*6]; // 修正：拆分Sin为每个S盒的输入
     end
 endgenerate
-//接下来在时钟的控制下进行S变换,发现不需要使用循环
-    always @(posedge clk or negedge rst_n)           
-        begin                                        
-            if(!rst_n)                               
-                S_out <=0;                                   
-            else begin
-                // 修正S盒索引计算：6位输入 -> 6位地址（1-64）
-                S_out[1:4]<=S_table1[{S_in[1][1], S_in[1][6], S_in[1][2:5]} + 1]; //S盒1
-                S_out[5:8]<=S_table2[{S_in[2][1], S_in[2][6], S_in[2][2:5]} + 1]; //S盒2
-                S_out[9:12]<=S_table3[{S_in[3][1], S_in[3][6], S_in[3][2:5]} + 1]; //S盒3
-                S_out[13:16]<=S_table4[{S_in[4][1], S_in[4][6], S_in[4][2:5]} + 1]; //S盒4
-                S_out[17:20]<=S_table5[{S_in[5][1], S_in[5][6], S_in[5][2:5]} + 1]; //S盒5
-                S_out[21:24]<=S_table6[{S_in[6][1], S_in[6][6], S_in[6][2:5]} + 1]; //S盒6
-                S_out[25:28]<=S_table7[{S_in[7][1], S_in[7][6], S_in[7][2:5]} + 1]; //S盒7
-                S_out[29:32]<=S_table8[{S_in[8][1], S_in[8][6], S_in[8][2:5]} + 1]; //S盒8
-            end                                   
-        end
+//接下来在时钟的控制下进行S变换
+reg [1:48] Sin_reg; // 注册Sin信号以改善时序
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        Sin_reg <= 48'b0;
+    end else begin
+        Sin_reg <= Sin;
+    end
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        S_out <= 32'b0;
+    end else begin
+        // 使用注册的Sin信号来改善时序
+        S_out[1:4]   <= S_table1[{Sin_reg[1], Sin_reg[6], Sin_reg[2:5]} + 1];     //S盒1
+        S_out[5:8]   <= S_table2[{Sin_reg[7], Sin_reg[12], Sin_reg[8:11]} + 1];   //S盒2
+        S_out[9:12]  <= S_table3[{Sin_reg[13], Sin_reg[18], Sin_reg[14:17]} + 1]; //S盒3
+        S_out[13:16] <= S_table4[{Sin_reg[19], Sin_reg[24], Sin_reg[20:23]} + 1]; //S盒4
+        S_out[17:20] <= S_table5[{Sin_reg[25], Sin_reg[30], Sin_reg[26:29]} + 1]; //S盒5
+        S_out[21:24] <= S_table6[{Sin_reg[31], Sin_reg[36], Sin_reg[32:35]} + 1]; //S盒6
+        S_out[25:28] <= S_table7[{Sin_reg[37], Sin_reg[42], Sin_reg[38:41]} + 1]; //S盒7
+        S_out[29:32] <= S_table8[{Sin_reg[43], Sin_reg[48], Sin_reg[44:47]} + 1]; //S盒8
+    end
+end
           
 // P变换表声明 - 32个5位元素(1~32)的数组
 reg [4:0] PTable [1:32];

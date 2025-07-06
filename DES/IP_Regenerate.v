@@ -26,7 +26,7 @@
 module IP_Regenerate(
     input clk,rst_n,start,
     input [1:64] LRCombine,
-    output reg ready, //转换完成标志位;
+    output ready, //转换完成标志位;
     output reg [1:64] desOut //输出的转换结果           
 );
 // IP反置换表声明 - 64个7位元素的数组
@@ -64,16 +64,25 @@ generate
     end
 endgenerate
 // 生成ready信号
-// 修正逻辑：当start信号有效且转换完成后，ready信号置1
+// 改进的时序控制：确保IP反置换完成后再置ready
 reg ready_reg;
+reg start_dly; // start信号的延迟版本
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        ready_reg <= 0;
-    end else if (start) begin
-        ready_reg <= 1; // start信号有效时，下一个时钟周期ready为1
+        start_dly <= 1'b0;
+        ready_reg <= 1'b0;
     end else begin
-        ready_reg <= 0;
+        start_dly <= start;
+        if (start && !start_dly) begin
+            // start信号上升沿，开始转换
+            ready_reg <= 1'b0;
+        end else if (start_dly && !start) begin
+            // start信号下降沿，转换完成
+            ready_reg <= 1'b1;
+        end else if (!start) begin
+            ready_reg <= 1'b0;
+        end
     end
 end
 

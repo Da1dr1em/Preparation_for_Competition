@@ -51,29 +51,35 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 reg [1:48] subkey[1:16];
-reg [5:0] keyidset[1:16]; // 用于生成私钥的ID
+wire [1:48] subkey_wire[1:16]; // 添加wire类型的中间信号
 genvar i;
+integer j; // 声明整数变量
 //生成16个私钥
 generate
     for (i = 1; i <= 16; i = i + 1) begin : key_gen_loop
-        // 设置keyidset[i]为i
-        always @(posedge clk or negedge rst_n) begin
-            if (!rst_n) begin
-                keyidset[i] <= 6'b0;
-            end else if (start) begin
-                keyidset[i] <= i; // 设置keyid为1~16
-            end
-        end
         Branch_Key_Generate Branch_Key_Generate_inst (
             .clk(clk),
             .rst_n(rst_n),
             .start(start),
-            .keyid(keyidset[i]), // 使用keyidset[i]作为keyid
+            .keyid(6'd0 + i), // 明确指定6位宽度
             .keyIn(keyIn),
-            .branchkey(subkey[i])
+            .branchkey(subkey_wire[i]) // 连接到wire类型
         );
     end
 endgenerate
+
+// 将wire信号赋值给reg - 移到generate块外面
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        for (j = 1; j <= 16; j = j + 1) begin
+            subkey[j] <= 48'b0;
+        end
+    end else begin
+        for (j = 1; j <= 16; j = j + 1) begin
+            subkey[j] <= subkey_wire[j];
+        end
+    end
+end
 //下一步是编写并使用f函数
 
 // 状态控制和轮计数
@@ -87,11 +93,11 @@ reg [1:32] L_next, R_next;
 wire [1:32] f_output;
 reg start_f_function;
 
-// F函数实例化
+// F函数实例化 - 添加有效轮数检查
 f_function f_function_inst (
     .clk(clk),
     .rst_n(rst_n),
-    .Keyin(subkey[round_count]),
+    .Keyin(round_count > 0 && round_count <= 16 ? subkey[round_count] : 48'b0),
     .RDatain(R_current),
     .f_out(f_output)
 );
@@ -119,17 +125,17 @@ always @(posedge clk or negedge rst_n) begin
             end
             
             ENCRYPTING: begin
-                // 计算下一轮的L和R值
-                L_next <= R_current;
-                R_next <= L_current ^ f_output;
-                
                 if (round_count == 5'd16) begin
+                    // 最后一轮完成，保存最终结果
+                    L_next <= R_current;
+                    R_next <= L_current ^ f_output;
                     state <= DONE;
                     start_f_function <= 1'b0;
                 end else begin
-                    round_count <= round_count + 1'b1;
+                    // 继续下一轮
                     L_current <= R_current;
                     R_current <= L_current ^ f_output;
+                    round_count <= round_count + 1'b1;
                 end
             end
             
