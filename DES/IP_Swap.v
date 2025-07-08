@@ -26,7 +26,8 @@
 module IP_Swap(
     input clk,rst_n,start,
     input [1:64] desIn,//输入的明文
-    output reg [1:64] IPOut //输出的明文  
+    output reg [1:64] IPOut, //输出的明文  
+    output reg ready //置换完成信号
 );
 
 // IP置换表声明 - 64个7位元素的数组
@@ -75,5 +76,23 @@ generate
         end
     end
 endgenerate
+
+// 生成ready信号
+reg start_dly;
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        start_dly <= 1'b0;
+        ready <= 1'b0;
+    end else begin
+        start_dly <= start;
+        if (start && !start_dly) begin
+            ready <= 1'b0;  // 开始置换
+        end else if (start_dly && !start) begin
+            ready <= 1'b1;  // 置换完成
+        end else if (!start) begin
+            ready <= 1'b0;
+        end
+    end
+end
 
 endmodule

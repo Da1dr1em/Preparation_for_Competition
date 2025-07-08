@@ -69,7 +69,7 @@ endgenerate
 //对密钥进行C、D拆分和循环左移
 reg [1:28] C,D; //C、D部分
 wire [1:28] Ci,Di; //循环左移后的C、D，改为wire类型
-reg start_dly; // start信号延迟
+reg start_dly, start_dly2, start_dly3, start_dly4; // start信号延迟
 
 //核心思路是先把keyA拆分为C、D，然后根据输入的keyid进行循环左移得到要的Ci和Di
 always @(posedge clk or negedge rst_n) begin
@@ -77,8 +77,14 @@ always @(posedge clk or negedge rst_n) begin
         C <= 28'b0;
         D <= 28'b0;
         start_dly <= 1'b0;
+        start_dly2 <= 1'b0;
+        start_dly3 <= 1'b0;
+        start_dly4 <= 1'b0;
     end else begin
         start_dly <= start;
+        start_dly2 <= start_dly;
+        start_dly3 <= start_dly2;
+        start_dly4 <= start_dly3;
         if(start && !start_dly) begin  // start上升沿
             C <= keyA[1:28];
             D <= keyA[29:56];
@@ -90,6 +96,7 @@ end
 left_loop left_loop_inst(
     .clk(clk),
     .rst_n(rst_n),
+    .start(start_dly2),  // 在C、D稳定后启动left_loop
     .C0(C),
     .D0(D),
     .keyid(keyid),
@@ -101,7 +108,7 @@ reg [1:56] CombinedCD; //组合C和D
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         CombinedCD <= 56'b0;
-    end else if (start_dly) begin  // 使用延迟的start信号
+    end else if (start_dly3) begin  // 等待left_loop输出稳定后再更新
         CombinedCD <= {Ci, Di}; //组合C和D
     end
 end
@@ -126,7 +133,7 @@ generate
         always @(posedge clk or negedge rst_n) begin
             if (!rst_n) begin
                 branchkey_reg[j] <= 1'b0;
-            end else if (start_dly) begin  // 使用延迟的start信号确保时序正确
+            end else if (start_dly4) begin  // 在CombinedCD稳定后再更新
                 branchkey_reg[j] <= CombinedCD[keySwapBTable[j]];
             end
         end

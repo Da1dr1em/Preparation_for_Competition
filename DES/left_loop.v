@@ -26,6 +26,7 @@
 module left_loop(
     input clk,
     input rst_n,
+    input start,  // 添加start信号
     input [1:28] C0,
     input [1:28] D0,
     input [5:0] keyid, //要求生成的私钥ID(1~16)
@@ -62,7 +63,7 @@ always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         Ci_reg <= 28'b0;
         Di_reg <= 28'b0;
-    end else begin
+    end else if (start) begin  // 只有在start信号为高时才更新
         if (keyid >= 1 && keyid <= 16) begin
             // 直接使用预计算的累积左移位数查找表
             case (keyid)

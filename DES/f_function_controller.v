@@ -35,10 +35,11 @@ module f_function_controller(
 
 // 状态机定义
 reg [2:0] state;
-parameter IDLE = 3'b000, LOAD_DATA = 3'b001, ENCRYPTING = 3'b010, DONE = 3'b011;
+parameter IDLE = 3'b000, LOAD_DATA = 3'b001, WAIT_INIT = 3'b010, ENCRYPTING = 3'b011, DONE = 3'b100;
 
 // 轮计数器
 reg [4:0] round_count; // 1-16轮计数
+reg [2:0] init_counter; // 初始化等待计数器
 
 // 输入数据缓存（在start为0时才能更新）
 reg [1:64] desIn_reg, keyIn_reg;
@@ -55,12 +56,14 @@ end
 
 // IP置换
 wire [1:64] SwappedIpData;
+wire ip_swap_ready;
 IP_Swap IP_Swap_inst (
     .clk(clk),
     .rst_n(rst_n),
     .start(state == LOAD_DATA),
     .desIn(desIn_reg),
-    .IPOut(SwappedIpData)
+    .IPOut(SwappedIpData),
+    .ready(ip_swap_ready)
 );
 
 // L、R数据
@@ -86,15 +89,28 @@ generate
     end
 endgenerate
 
-// 子密钥寄存
+// 子密钥寄存 - 添加有效标志和延迟计数
+reg subkey_valid;
+reg [2:0] subkey_delay_counter;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         for (j = 1; j <= 16; j = j + 1) begin
             subkey[j] <= 48'b0;
         end
-    end else begin
-        for (j = 1; j <= 16; j = j + 1) begin
-            subkey[j] <= subkey_wire[j];
+        subkey_valid <= 1'b0;
+        subkey_delay_counter <= 3'b0;
+    end else if (state == LOAD_DATA) begin
+        subkey_delay_counter <= 3'b0;
+        subkey_valid <= 1'b0;
+    end else if (state == WAIT_INIT) begin
+        if (subkey_delay_counter < 3'd5) begin  // 延长到5个周期
+            subkey_delay_counter <= subkey_delay_counter + 1'b1;
+            // 持续更新subkey数组
+            for (j = 1; j <= 16; j = j + 1) begin
+                subkey[j] <= subkey_wire[j];
+            end
+        end else begin
+            subkey_valid <= 1'b1;
         end
     end
 end
@@ -104,7 +120,7 @@ wire [1:32] f_output;
 f_function f_function_inst (
     .clk(clk),
     .rst_n(rst_n),
-    .Keyin(round_count > 0 && round_count <= 16 ? subkey[round_count] : 48'b0),
+    .Keyin((round_count > 0 && round_count <= 16 && subkey_valid) ? subkey[round_count] : 48'b0),
     .RDatain(R_current),
     .f_out(f_output)
 );
@@ -114,6 +130,7 @@ always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         state <= IDLE;
         round_count <= 5'b0;
+        init_counter <= 3'b0;
         L_current <= 32'b0;
         R_current <= 32'b0;
         L_next <= 32'b0;
@@ -124,15 +141,24 @@ always @(posedge clk or negedge rst_n) begin
                 if (start) begin
                     state <= LOAD_DATA;
                     round_count <= 5'b0;
+                    init_counter <= 3'b0;
                 end
             end
             
             LOAD_DATA: begin
-                // 等待IP置换和密钥生成完成，然后开始加密
-                state <= ENCRYPTING;
-                round_count <= 5'd1;
-                L_current <= SwappedIpData[1:32];
-                R_current <= SwappedIpData[33:64];
+                // 在这个状态触发IP置换和密钥生成
+                state <= WAIT_INIT;
+                init_counter <= 3'd0;
+            end
+            
+            WAIT_INIT: begin
+                // 等待IP置换和密钥生成完成
+                if (ip_swap_ready && subkey_valid) begin
+                    state <= ENCRYPTING;
+                    round_count <= 5'd1;
+                    L_current <= SwappedIpData[1:32];
+                    R_current <= SwappedIpData[33:64];
+                end
             end
             
             ENCRYPTING: begin
