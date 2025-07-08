@@ -77,10 +77,11 @@ always @(posedge clk or negedge rst_n) begin
         if (start && !start_dly) begin
             // start信号上升沿，开始转换
             ready_reg <= 1'b0;
-        end else if (start_dly && !start) begin
-            // start信号下降沿，转换完成
+        end else if (start_dly && start) begin
+            // start持续一个周期，转换完成
             ready_reg <= 1'b1;
         end else if (!start) begin
+            // start下降后清除ready
             ready_reg <= 1'b0;
         end
     end

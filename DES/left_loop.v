@@ -26,16 +26,18 @@
 module left_loop(
     input clk,
     input rst_n,
-    input start,  // 添加start信号
+    input start,  // 开始信号
     input [1:28] C0,
     input [1:28] D0,
     input [5:0] keyid, //要求生成的私钥ID(1~16)
+    output reg ready,  // 完成标志
     output [1:28] Ci,
-    output [1:28] Di  // 改为wire类型                   
+    output [1:28] Di                   
 );
 
 // 内部reg信号
 reg [1:28] Ci_reg, Di_reg;
+reg start_prev;  // 用于检测start的上升沿
 
 // DES标准的每轮左移位数表（不是累积的）
 reg [1:0] left_shift_count[1:16];
@@ -58,15 +60,23 @@ initial begin
     left_shift_count[16] = 2'b01; //左移1位
 end
 
-// 正确的累积左移实现 - 使用查找表方式
+// 握手信号控制的循环左移实现
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         Ci_reg <= 28'b0;
         Di_reg <= 28'b0;
-    end else if (start) begin  // 只有在start信号为高时才更新
-        if (keyid >= 1 && keyid <= 16) begin
-            // 直接使用预计算的累积左移位数查找表
-            case (keyid)
+        ready <= 1'b0;
+        start_prev <= 1'b0;
+    end else begin
+        start_prev <= start;
+        
+        // 检测start上升沿
+        if (start && !start_prev) begin
+            ready <= 1'b0;  // 开始工作，清除ready标志
+            
+            if (keyid >= 1 && keyid <= 16) begin
+                // 直接使用预计算的累积左移位数查找表
+                case (keyid)
                 1: begin  // 累积左移1位
                     Ci_reg <= {C0[2:28], C0[1]};
                     Di_reg <= {D0[2:28], D0[1]};
@@ -136,9 +146,18 @@ always @(posedge clk or negedge rst_n) begin
                     Di_reg <= 28'b0;
                 end
             endcase
-        end else begin
-            Ci_reg <= 28'b0;
-            Di_reg <= 28'b0;
+            
+            // 组合逻辑计算完成，立即设置ready标志
+            ready <= 1'b1;
+            
+            end else begin
+                Ci_reg <= 28'b0;
+                Di_reg <= 28'b0;
+                ready <= 1'b1;  // 即使keyid无效也设置ready
+            end
+        end else if (!start && start_prev) begin
+            // start下降沿，保持ready直到下次start
+            ready <= 1'b0;
         end
     end
 end

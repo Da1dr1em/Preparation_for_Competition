@@ -77,7 +77,7 @@ generate
     end
 endgenerate
 
-// 生成ready信号
+// 生成ready信号 - 修复死锁问题
 reg start_dly;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -86,10 +86,13 @@ always @(posedge clk or negedge rst_n) begin
     end else begin
         start_dly <= start;
         if (start && !start_dly) begin
-            ready <= 1'b0;  // 开始置换
-        end else if (start_dly && !start) begin
-            ready <= 1'b1;  // 置换完成
+            // start上升沿：开始工作，在下一个周期置ready
+            ready <= 1'b0;
+        end else if (start_dly && start) begin
+            // start已经持续一个周期，置换完成
+            ready <= 1'b1;
         end else if (!start) begin
+            // start下降后清除ready
             ready <= 1'b0;
         end
     end
