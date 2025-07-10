@@ -26,10 +26,10 @@
 module f_function_controller(
     input clk,
     input rst_n,
-    input start,
+    input start, //只有几个周期有效的输入，模拟按钮
     input [1:64] desIn,     // 明文输入
     input [1:64] keyIn,     // 密钥输入
-    output reg ready,       // 16轮完成信号
+    output reg ready,       // 加密完成信号
     output [1:64] desOut    // 加密结果输出
 );
 
@@ -72,7 +72,7 @@ always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         desIn_reg <= 64'b0;
         keyIn_reg <= 64'b0;
-    end else if (!start) begin
+    end else if (!start) begin // 当start为0时，更新输入数据
         desIn_reg <= desIn;
         keyIn_reg <= keyIn;
     end
@@ -246,12 +246,9 @@ always @(posedge clk or negedge rst_n) begin
             WAIT_IP_REGEN: begin //7
                 if (ip_regen_ready) begin
                     ip_regen_start <= 1'b0;
-                    ready <= 1'b1;
-                    if (!start) begin
-                        state <= IDLE;
-                        ready <= 1'b0;
-                        round_count <= 5'b0;
-                    end
+                    ready <= 1'b1; // 设置ready信号，表示加密完成
+                    state <= IDLE;
+                    round_count <= 5'b0;
                 end
             end
             

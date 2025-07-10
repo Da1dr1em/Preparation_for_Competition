@@ -29,8 +29,12 @@ module IP_Regenerate(
     output ready, //转换完成标志位;
     output reg [1:64] desOut //输出的转换结果           
 );
+reg [1:64] outputrecord;
 // IP反置换表声明 - 64个7位元素的数组
 reg [6:0] IPRegenerateTable [1:64];
+initial begin
+    outputrecord = 64'b0; // 初始化输出记录
+end
 initial begin
     // 正确的IP反置换表初始化
     IPRegenerateTable[1] = 40; IPRegenerateTable[2] = 8; IPRegenerateTable[3] = 48; IPRegenerateTable[4] = 16;
@@ -57,8 +61,10 @@ generate
         always @(posedge clk or negedge rst_n) begin
             if (!rst_n) begin
                 desOut[i] <= 0;
+                outputrecord[i] <= 0; // 清除输出记录
             end else if (start) begin
                 desOut[i] <= LRCombine[IPRegenerateTable[i]];
+                outputrecord[i] <= 1'b1; // 更新输出记录
             end
         end
     end
@@ -66,27 +72,12 @@ endgenerate
 // 生成ready信号
 // 改进的时序控制：确保IP反置换完成后再置ready
 reg ready_reg;
-reg start_dly; // start信号的延迟版本
-
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        start_dly <= 1'b0;
-        ready_reg <= 1'b0;
-    end else begin
-        start_dly <= start;
-        if (start && !start_dly) begin
-            // start信号上升沿，开始转换
-            ready_reg <= 1'b0;
-        end else if (start_dly && start) begin
-            // start持续一个周期，转换完成
-            ready_reg <= 1'b1;
-        end else if (!start) begin
-            // start下降后清除ready
-            ready_reg <= 1'b0;
-        end
-    end
-end
-
-assign ready = ready_reg;
-
+    always @(posedge clk)           
+        begin                                        
+            if (outputrecord == 64'hffff_ffff_ffff_ffff) begin
+                ready_reg <= 1'b1; // 所有输出位都已更新
+                end
+                else ready_reg <= 1'b0; // 有位未更新                                    
+        end                                          
+assign ready = ready_reg; // 输出ready信号
 endmodule
