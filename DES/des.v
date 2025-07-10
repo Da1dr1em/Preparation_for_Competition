@@ -33,7 +33,7 @@ module des(
 
 // 使用修复版本的F函数控制器来处理整个DES加密过程
 // 包含时序修复、握手信号、子密钥保存状态和组合逻辑F函数
-f_function_controller_v2 f_controller_inst (
+f_function_controller f_controller_inst (
     .clk(clk),
     .rst_n(rst_n),
     .start(start),
