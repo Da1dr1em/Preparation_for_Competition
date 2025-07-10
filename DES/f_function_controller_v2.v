@@ -58,13 +58,12 @@ reg all_subkeys_ready;
 
 // L、R数据
 reg [1:32] L_current, R_current;
-reg [1:32] L_next, R_next;
 
 // F函数相关
 wire [1:32] f_output;
 
 // IP逆置换相关
-wire [1:64] final_LR;
+reg [1:64] final_LR_reg;  // 保存最终的L、R组合
 wire ip_regen_ready;
 reg ip_regen_start;
 
@@ -93,7 +92,7 @@ IP_Swap IP_Swap_inst (
 genvar i;
 generate
     for (i = 1; i <= 16; i = i + 1) begin : key_gen_loop
-        Branch_Key_Generate_v2 Branch_Key_Generate_inst (
+        Branch_Key_Generate Branch_Key_Generate_inst (
             .clk(clk),
             .rst_n(rst_n),
             .start(subkey_start[i]),
@@ -132,24 +131,30 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-// F函数
-f_function f_function_inst (
-    .clk(clk),
-    .rst_n(rst_n),
+// F函数 - 使用完全组合逻辑版本，消除时钟延迟
+f_function_combinational f_function_inst (
     .Keyin((round_count > 0 && round_count <= 16) ? subkey[round_count] : 48'b0),
     .RDatain(R_current),
     .f_out(f_output)
 );
 
-// 最终L、R组合
-assign final_LR = (state == DONE) ? {R_next, L_next} : 64'b0;
+// 最终L、R组合保存
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        final_LR_reg <= 64'b0;
+    end else if (state == ENCRYPTING && round_count == 5'd16) begin
+        // 在ENCRYPTING状态的最后一轮保存最终结果
+        //final_LR_reg <= {R_current, L_current ^ f_output};
+        final_LR_reg <= {L_current ^ f_output, R_current}; //这个才是正确排序，即{R16,L16}
+    end
+end
 
 // IP逆置换
 IP_Regenerate IP_Regenerate_inst (
     .clk(clk),
     .rst_n(rst_n),
     .start(ip_regen_start),
-    .LRCombine(final_LR),
+    .LRCombine(final_LR_reg),
     .ready(ip_regen_ready),
     .desOut(desOut)
 );
@@ -163,8 +168,7 @@ always @(posedge clk or negedge rst_n) begin
         round_count <= 5'b0;
         L_current <= 32'b0;
         R_current <= 32'b0;
-        L_next <= 32'b0;
-        R_next <= 32'b0;
+        final_LR_reg <= 64'b0;
         ip_swap_start <= 1'b0;
         ip_regen_start <= 1'b0;
         for (j = 1; j <= 16; j = j + 1) begin
@@ -220,11 +224,10 @@ always @(posedge clk or negedge rst_n) begin
                 end
             end
             
-            ENCRYPTING: begin
+            ENCRYPTING: begin //5
                 if (round_count == 5'd16) begin
-                    // 16轮完成，保存最终结果
-                    L_next <= R_current;
-                    R_next <= L_current ^ f_output;
+                    // 16轮完成，直接进入DONE状态
+                    // final_LR_reg已经在always块中保存了
                     state <= DONE;
                 end else begin
                     // 继续下一轮
@@ -234,13 +237,13 @@ always @(posedge clk or negedge rst_n) begin
                 end
             end
             
-            DONE: begin
+            DONE: begin //6
                 // 启动IP逆置换
                 ip_regen_start <= 1'b1;
                 state <= WAIT_IP_REGEN;
             end
             
-            WAIT_IP_REGEN: begin
+            WAIT_IP_REGEN: begin //7
                 if (ip_regen_ready) begin
                     ip_regen_start <= 1'b0;
                     ready <= 1'b1;
