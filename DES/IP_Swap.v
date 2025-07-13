@@ -52,6 +52,29 @@ initial begin
     IPTable[57] = 63; IPTable[58] = 55; IPTable[59] = 47; IPTable[60] = 39;
     IPTable[61] = 31; IPTable[62] = 23; IPTable[63] = 15; IPTable[64] = 7;
 end
+
+/*
+
+always@(negedge rst_n) begin
+    IPTable[1] <= 58; IPTable[2] <= 50; IPTable[3] <= 42; IPTable[4] <= 34;
+    IPTable[5] <= 26; IPTable[6] <= 18; IPTable[7] <= 10; IPTable[8] <= 2;
+    IPTable[9] <= 60; IPTable[10] <= 52; IPTable[11] <= 44; IPTable[12] <= 36;
+    IPTable[13]<= 28; IPTable[14] <= 20; IPTable[15] <= 12; IPTable[16] <= 4;
+    IPTable[17]<= 62; IPTable[18] <= 54; IPTable[19] <= 46; IPTable[20] <= 38;
+    IPTable[21] <= 30; IPTable[22] <= 22; IPTable[23] <= 14; IPTable[24] <= 6;
+    IPTable[25] <= 64; IPTable[26] <= 56; IPTable[27] <= 48; IPTable[28] <= 40;
+    IPTable[29] <= 32; IPTable[30] <= 24; IPTable[31] <= 16; IPTable[32] <= 8;
+    IPTable[33] <= 57; IPTable[34] <= 49; IPTable[35] <= 41; IPTable[36] <= 33;
+    IPTable[37] <= 25; IPTable[38] <= 17; IPTable[39] <= 9; IPTable[40] <= 1;
+    IPTable[41] <= 59; IPTable[42] <= 51; IPTable[43] <= 43; IPTable[44] <= 35;
+    IPTable[45] <= 27; IPTable[46] <= 19; IPTable[47] <= 11; IPTable[48] <= 3;
+    IPTable[49] <= 61; IPTable[50] <= 53; IPTable[51] <= 45; IPTable[52] <= 37;
+    IPTable[53] <= 29; IPTable[54] <= 21; IPTable[55] <= 13; IPTable[56] <= 5;
+    IPTable[57] <= 63; IPTable[58] <= 55; IPTable[59] <= 47; IPTable[60] <= 39;
+    IPTable[61] <= 31; IPTable[62] <= 23; IPTable[63] <= 15; IPTable[64] <= 7;
+end
+*/
+
 /*
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
