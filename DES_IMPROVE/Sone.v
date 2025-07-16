@@ -33,7 +33,7 @@ wire [1:6] SAddress; //输入的S盒数据
 assign SAddress = {Sin[1],Sin[6],Sin[2:5]}; //S盒地址，第一位和最后一位是行号，中间四位是列号
 always @(Sin) begin
     //相当于ROM了
-    case (Sin)
+    case (SAddress)
         0:  S_out =  14;
          1:  S_out =   4;
          2:  S_out =  13;

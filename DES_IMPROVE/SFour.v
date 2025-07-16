@@ -30,7 +30,7 @@ module SFour(
 reg [1:4] S_out; //S盒输出数据
 always @(Sin) begin
     case({Sin[1], Sin[6], Sin[2:5]}) //S盒地址，第一位和最后一位是行号，中间四位是列号
-                  0:  S_out =  7;
+         0:  S_out =  7;
          1:  S_out = 13;
          2:  S_out = 14;
          3:  S_out =  3;

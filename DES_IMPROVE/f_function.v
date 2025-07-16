@@ -85,14 +85,14 @@ SEight S8 (
 
 
 assign f_out = {
-    Ri[1], Ri[2], Ri[3], Ri[4],
-    Ri[5], Ri[6], Ri[7], Ri[8],
-    Ri[9], Ri[10], Ri[11], Ri[12],
-    Ri[13], Ri[14], Ri[15], Ri[16],
-    Ri[17], Ri[18], Ri[19], Ri[20],
-    Ri[21], Ri[22], Ri[23], Ri[24],
-    Ri[25], Ri[26], Ri[27], Ri[28],
-    Ri[29], Ri[30], Ri[31], Ri[32]
+    Ri[16], Ri[7], Ri[20], Ri[21],
+    Ri[29], Ri[12], Ri[28], Ri[17],
+    Ri[1], Ri[15], Ri[23], Ri[26],
+    Ri[5], Ri[18], Ri[31], Ri[10],
+    Ri[2], Ri[8], Ri[24], Ri[14],
+    Ri[32], Ri[27], Ri[3], Ri[9],
+    Ri[19], Ri[13], Ri[30], Ri[6],
+    Ri[22], Ri[11], Ri[4], Ri[25]
 };
 
 endmodule

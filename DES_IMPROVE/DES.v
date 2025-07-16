@@ -29,7 +29,7 @@ module DES(
     output ready,
     output [1:64] desOut                   
 );
-reg [3:0] roundcount; // 轮计数器(0->16)                                                                 
+reg [4:0] roundcount; // 轮计数器(0->16)                                                                 
 //模块分成四部分，IP置换，密钥生成，16次迭代，反变换输出
 //IP置换模块应在接受到start的信号后开始工作，读取输入的明文并进行IP置换
 wire [1:64] swapped_ip_data;
@@ -66,22 +66,22 @@ f_function f (
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        roundcount <= 4'b0000; //复位轮计数器
+        roundcount <= 5'b00000; //复位轮计数器
         des_reg <= 64'b0; //复位寄存器
         key_reg <= 64'b0; //复位密钥寄存器
     end
     else if (start) begin
-        roundcount <= 4'b0000; //开始时轮计数器从0开始
+        roundcount <= 5'b00000; //开始时轮计数器从0开始
         key_reg <= keyIn; //将输入的密钥存入寄存器
         des_reg <= swapped_ip_data; //将IP置换后的明文存入寄存器
     end//以下仅在start信号为低和rst为高时执行
-    else if (roundcount < 4'b1111) begin //轮计数器小于15时继续迭代
+    else if (roundcount < 5'b01111) begin //轮计数器小于15时继续迭代
         des_reg <= {Rdatain, Ldatain ^ f_out}; //更新寄存器，左半部分和F函数结果异或后作为新的右半部分
         roundcount <= roundcount + 1; //轮计数器加1
     end
-    else if (roundcount == 4'b1111) begin //轮计数器等于15时，表示迭代16次完成
+    else if (roundcount == 5'b01111) begin //轮计数器等于15时，表示迭代16次完成
         des_reg <= {Ldatain ^ f_out,Rdatain}; //最后一次迭代后更新寄存器{R16,L16}
-        roundcount <= 4'b0000; //复位轮计数器
+        roundcount <= 5'b10000; //复位轮计数器
     end
 end
 
@@ -103,7 +103,7 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 */
-assign ready = (roundcount == 4'b1111); //当轮计数器等于15时，表示迭代完成，ready信号为高
+assign ready = (roundcount == 5'b10000); //当轮计数器等于15时，表示迭代完成，ready信号为高
 //反IP置换模块
 assign desOut = {
     des_reg[40], des_reg[8], des_reg[48], des_reg[16],

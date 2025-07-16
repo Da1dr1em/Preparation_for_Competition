@@ -30,19 +30,20 @@ module Private_Key_Gen(
 );
 //首先完成密钥的置换A
 wire [1:56] key_permuted;                                                                   
-assign key_permuted = {keyIn[57], keyIn[49], keyIn[41], keyIn[33], keyIn[25], keyIn[17], keyIn[9], keyIn[1],
-                      keyIn[58], keyIn[50], keyIn[42], keyIn[34], keyIn[26], keyIn[18], keyIn[10], keyIn[2],
-                      keyIn[59], keyIn[51], keyIn[43], keyIn[35], keyIn[27], keyIn[19], keyIn[11], keyIn[3],
-                      keyIn[60], keyIn[52], keyIn[44], keyIn[36], keyIn[63], keyIn[55], keyIn[47], keyIn[39],
-                      keyIn[31], keyIn[23], keyIn[15], keyIn[7], keyIn[62], keyIn[54], keyIn[46], keyIn[38],
-                      keyIn[30], keyIn[22], keyIn[14], keyIn[6], keyIn[61], keyIn[53], keyIn[45], keyIn[37],
-                      keyIn[29] ,keyIn[21],keyIn[13],keyIn[5] ,keyIn[28],keyIn[20] ,keyIn[12],keyIn[4]
+assign key_permuted = {keyIn[57], keyIn[49], keyIn[41], keyIn[33], keyIn[25], keyIn[17], keyIn[9], 
+                      keyIn[1],keyIn[58], keyIn[50], keyIn[42], keyIn[34], keyIn[26], keyIn[18],
+                      keyIn[10],keyIn[2], keyIn[59], keyIn[51], keyIn[43], keyIn[35], keyIn[27],
+                      keyIn[19], keyIn[11], keyIn[3],keyIn[60], keyIn[52], keyIn[44], keyIn[36],
+                      keyIn[63], keyIn[55], keyIn[47], keyIn[39], keyIn[31], keyIn[23], keyIn[15], 
+                      keyIn[7], keyIn[62], keyIn[54], keyIn[46], keyIn[38],keyIn[30], keyIn[22],
+                      keyIn[14], keyIn[6], keyIn[61], keyIn[53], keyIn[45], keyIn[37],keyIn[29],
+                      keyIn[21],keyIn[13],keyIn[5] ,keyIn[28],keyIn[20] ,keyIn[12],   keyIn[4]
                       };
 wire [1:28] left_key, right_key; //分为左半部分和右半部分
 assign left_key = key_permuted[1:28]; //左半部分
 assign right_key = key_permuted[29:56]; //右半部分
 //一次性把所有轮密钥都生成了
-wire [1:48] left_key_shifted[1:16], right_key_shifted[1:16];
+wire [1:28] left_key_shifted[1:16], right_key_shifted[1:16];
 assign left_key_shifted[1] = {left_key[2:28], left_key[1]};
 assign right_key_shifted[1] = {right_key[2:28], right_key[1]};
 assign left_key_shifted[2] = {left_key[3:28], left_key[1:2]};
@@ -80,7 +81,7 @@ wire [1:56] CDcombined;
 assign CDcombined = {
     left_key_shifted[keyid][1:28], right_key_shifted[keyid][1:28]
 };
-
+//密钥置换B
 assign subkey = {
     CDcombined[14], CDcombined[17], CDcombined[11], CDcombined[24],
     CDcombined[1], CDcombined[5], CDcombined[3], CDcombined[28],
