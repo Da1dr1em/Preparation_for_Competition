@@ -45,48 +45,54 @@ wire [1:48] Sin;
 assign Sin = EData ^ Keyin;
 
 //为节省资源，仍然仅使用组合逻辑完成S盒变换，直接在输出端口上进行赋值
-wire [1:32] S_out;
-//不好使用赋值的方式，应该使用case语句实现，内容太多考虑另起模块
+wire [1:32] Ri;
+SOne S1 (
+    .Sin(Sin[1:6]),
+    .Sout(Ri[1:4])
+);
+STwo S2 (
+    .Sin(Sin[7:12]),
+    .Sout(Ri[5:8])
+);
+SThree S3 (
+    .Sin(Sin[13:18]),
+    .Sout(Ri[9:12])
+);
+SFour S4 (
+    .Sin(Sin[19:24]),
+    .Sout(Ri[13:16])
+);
+SFive S5 (
+    .Sin(Sin[25:30]),
+    .Sout(Ri[17:20])
+);
+SSix S6 (
+    .Sin(Sin[31:36]),
+    .Sout(Ri[21:24])
+);
+SSeven S7 (
+    .Sin(Sin[37:42]),
+    .Sout(Ri[25:28])
+);
+SEight S8 (
+    .Sin(Sin[43:48]),
+    .Sout(Ri[29:32])
+);
 
 
 
 
 
 
-
-
-// P变换表声明
-assign f_out[1]  = S_out[16];
-assign f_out[2]  = S_out[7];
-assign f_out[3]  = S_out[20];
-assign f_out[4]  = S_out[21];
-assign f_out[5]  = S_out[29];
-assign f_out[6]  = S_out[12];
-assign f_out[7]  = S_out[28];
-assign f_out[8]  = S_out[17];
-assign f_out[9]  = S_out[1];
-assign f_out[10] = S_out[15];
-assign f_out[11] = S_out[23];
-assign f_out[12] = S_out[26];
-assign f_out[13] = S_out[5];
-assign f_out[14] = S_out[18];
-assign f_out[15] = S_out[31];
-assign f_out[16] = S_out[10];
-assign f_out[17] = S_out[2];
-assign f_out[18] = S_out[8];
-assign f_out[19] = S_out[24];
-assign f_out[20] = S_out[14];
-assign f_out[21] = S_out[32];
-assign f_out[22] = S_out[27];
-assign f_out[23] = S_out[3];
-assign f_out[24] = S_out[9];
-assign f_out[25] = S_out[19];
-assign f_out[26] = S_out[13];
-assign f_out[27] = S_out[30];
-assign f_out[28] = S_out[6];
-assign f_out[29] = S_out[22];
-assign f_out[30] = S_out[11];
-assign f_out[31] = S_out[4];
-assign f_out[32] = S_out[25];
+assign f_out = {
+    Ri[1], Ri[2], Ri[3], Ri[4],
+    Ri[5], Ri[6], Ri[7], Ri[8],
+    Ri[9], Ri[10], Ri[11], Ri[12],
+    Ri[13], Ri[14], Ri[15], Ri[16],
+    Ri[17], Ri[18], Ri[19], Ri[20],
+    Ri[21], Ri[22], Ri[23], Ri[24],
+    Ri[25], Ri[26], Ri[27], Ri[28],
+    Ri[29], Ri[30], Ri[31], Ri[32]
+};
 
 endmodule

@@ -23,10 +23,11 @@
 //----------------------------------------------------------------------------------------
 //****************************************************************************************//
 
-module Sone(
+module SOne(
     input [1:6] Sin, //输入的S盒数据
-    output reg [1:4] S_out //输出的S盒数据;                 
+    output [1:4] Sout //输出的S盒数据;                 
 );
+reg [1:4] S_out; //S盒输出数据
 wire [1:6] SAddress; //输入的S盒数据
 //不用寄存器可能实现吗？
 assign SAddress = {Sin[1],Sin[6],Sin[2:5]}; //S盒地址，第一位和最后一位是行号，中间四位是列号
@@ -99,5 +100,6 @@ always @(Sin) begin
         63:  S_out =  13;       
         default: ; 
     endcase
-end                                                                   
+end
+assign Sout = S_out;                                                                    
 endmodule
