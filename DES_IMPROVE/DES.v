@@ -39,7 +39,7 @@ IP ip (
 );
 //按照DES的迭代过程来讲，用寄存器记录置换后的明文和密钥，然后在明文进行迭代时保证密钥保存的是当前轮需要的子密钥即可
 //所以生成密钥的逻辑可以改一下，用寄存器记录密钥，然后在这个寄存器上迭代得到各个轮数的密钥即可
-reg [1:64] key_reg; //寄存器记录密钥(公钥到各轮私钥)
+//reg [1:64] key_reg; //寄存器记录密钥(公钥到各轮私钥)
 reg [1:64] des_reg; //寄存器记录明文到密文的寄存器
 
 
@@ -51,7 +51,7 @@ wire [1:48] subkey;
 wire [1:32] f_out;
 
 Private_Key_Gen keygen (
-    .keyIn(key_reg[1:64]), //输入的密钥
+    .keyIn(keyIn), //输入的密钥
     .keyid(roundcount+5'b00001), //要输出的key对应的id，范围为1-16
     .subkey(subkey) //输出的子密钥
 );
@@ -68,11 +68,11 @@ always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         roundcount <= 5'b00000; //复位轮计数器
         des_reg <= 64'b0; //复位寄存器
-        key_reg <= 64'b0; //复位密钥寄存器
+        //key_reg <= 64'b0; //复位密钥寄存器
     end
     else if (start) begin
         roundcount <= 5'b00000; //开始时轮计数器从0开始
-        key_reg <= keyIn; //将输入的密钥存入寄存器
+        //key_reg <= keyIn; //将输入的密钥存入寄存器
         des_reg <= swapped_ip_data; //将IP置换后的明文存入寄存器
     end//以下仅在start信号为低和rst为高时执行
     else if (roundcount < 5'b01111) begin //轮计数器小于15时继续迭代
@@ -81,7 +81,7 @@ always @(posedge clk or negedge rst_n) begin
     end
     else if (roundcount == 5'b01111) begin //轮计数器等于15时，表示迭代16次完成
         des_reg <= {Ldatain ^ f_out,Rdatain}; //最后一次迭代后更新寄存器{R16,L16}
-        roundcount <= 5'b10000; //复位轮计数器
+        roundcount <= 5'b10000; //输出ready的信号
     end
 end
 
