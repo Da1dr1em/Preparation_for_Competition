@@ -33,15 +33,17 @@ reg [4:0] roundcount; // 轮计数器(0->16)
 //模块分成四部分，IP置换，密钥生成，16次迭代，反变换输出
 //IP置换模块应在接受到start的信号后开始工作，读取输入的明文并进行IP置换
 wire [1:64] swapped_ip_data;
-IP ip (
-    .desin(desIn),
-    .swapped_ip_data(swapped_ip_data)
-);
-//按照DES的迭代过程来讲，用寄存器记录置换后的明文和密钥，然后在明文进行迭代时保证密钥保存的是当前轮需要的子密钥即可
-//所以生成密钥的逻辑可以改一下，用寄存器记录密钥，然后在这个寄存器上迭代得到各个轮数的密钥即可
-//reg [1:64] key_reg; //寄存器记录密钥(公钥到各轮私钥)
+assign swapped_ip_data = {
+    desIn[58], desIn[50], desIn[42], desIn[34], desIn[26], desIn[18], desIn[10], desIn[2],
+    desIn[60], desIn[52], desIn[44], desIn[36], desIn[28], desIn[20], desIn[12], desIn[4],
+    desIn[62], desIn[54], desIn[46], desIn[38], desIn[30], desIn[22], desIn[14], desIn[6],
+    desIn[64], desIn[56], desIn[48], desIn[40], desIn[32], desIn[24], desIn[16], desIn[8],
+    desIn[57], desIn[49], desIn[41], desIn[33], desIn[25], desIn[17], desIn[9], desIn[1],
+    desIn[59], desIn[51], desIn[43], desIn[35], desIn[27], desIn[19], desIn[11], desIn[3],
+    desIn[61], desIn[53], desIn[45], desIn[37], desIn[29], desIn[21], desIn[13], desIn[5],
+    desIn[63], desIn[55], desIn[47], desIn[39], desIn[31], desIn[23], desIn[15], desIn[7]
+};  
 reg [1:64] des_reg; //寄存器记录明文到密文的寄存器
-
 
 wire [1:32] Rdatain;
 wire [1:32] Ldatain;
