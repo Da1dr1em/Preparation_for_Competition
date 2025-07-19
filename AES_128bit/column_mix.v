@@ -68,7 +68,7 @@ generate
         assign final_matrix[3][j] = plus3_matrix[0][j] ^ message_matrix[1][j] ^ message_matrix[2][j] ^ plus2_matrix[3][j];
     end   
 endgenerate
-
+//输出列混合后的信息
 generate
     for (i = 0; i < 4; i = i + 1) begin : out_row_gen
         for (j = 0; j < 4; j = j + 1) begin : out_col_gen
@@ -76,6 +76,10 @@ generate
         end
     end
 endgenerate
-
+//输出顺序仍然为（0->15）
+//0 4 8 12
+//1 5 9 13
+//2 6 10 14
+//3 7 11 15
 
 endmodule
