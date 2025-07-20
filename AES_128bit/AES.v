@@ -57,7 +57,7 @@ assign keyregsignal = key_reg; //将轮密钥的输出信号赋值给wire
                 key_reg <= keyIn; //将输入的密钥赋值给轮密钥寄存器
                 roundcount <= 4'b0; //轮计数器归零
             end
-            else if (roundcount==4'b0) begin
+            else if (roundcount==4'b0) begin //明文输入之后先仅进行轮密钥加
                 aes_reg <= aesregsignal^keyregsignal; //轮密钥加
                 roundcount <= roundcount + 1; //轮计数器加1
                 //补充key的更新逻辑
@@ -69,7 +69,7 @@ assign keyregsignal = key_reg; //将轮密钥的输出信号赋值给wire
                 key_reg <= keyupdatesignal; //更新轮密钥
             end    
             else if(roundcount==4'b1010) begin
-                aes_reg <= MixColumnOut^keyupdatesignal; //轮密钥加
+                aes_reg <= rowshiftOut^keyupdatesignal; //轮密钥加
                 roundcount <= 4'b1011; //轮计数器归零
             end
                 
@@ -90,8 +90,8 @@ column_mix column_mix_inst (
 );
 RoundKeyGen RoundKeyGen_inst (
     .keyin(keyregsignal), //输入的轮密钥
-    .round(roundcount), //当前轮数
-    .nextkey(keyupdatesignal+4'b0001) //输出的下一轮密钥
+    .round(roundcount+4'b0001), //下一轮轮数，由于非阻塞赋值的性质，要求本轮生成下一轮的密钥，否则下一轮会出错
+    .nextkey(keyupdatesignal) //输出的下一轮密钥
 );
                                                                    
 endmodule
