@@ -84,7 +84,7 @@ module Sbox(
             //第四行
             8'h30:Sout_reg = 8'h04;
             8'h31:Sout_reg = 8'hc7;
-            8'h32:Sout_reg = 8'h43;
+            8'h32:Sout_reg = 8'h23;
             8'h33:Sout_reg = 8'hc3;
             8'h34:Sout_reg = 8'h18;
             8'h35:Sout_reg = 8'h96;
@@ -95,7 +95,7 @@ module Sbox(
             8'h3a:Sout_reg = 8'h80;
             8'h3b:Sout_reg = 8'he2;
             8'h3c:Sout_reg = 8'heb;
-            8'h3d:Sout_reg = 8'h47;
+            8'h3d:Sout_reg = 8'h27;
             8'h3e:Sout_reg = 8'hb2;
             8'h3f:Sout_reg = 8'h75;
             //第五行

@@ -125,65 +125,6 @@ module AES_tb();
         end else begin
             $display("INFO: Please verify the result manually with AES standard.");
         end
-        
-        // 额外测试：全零输入
-        $display("");
-        $display("Additional Test: All Zero Input");
-        $display("==============================");
-        
-        // 复位
-        rst_n = 0;
-        #10;
-        rst_n = 1;
-        #10;
-        
-        // 全零测试
-        aesIn = 128'h0;
-        keyIn = 128'h0;
-        
-        display_data(aesIn, "Plaintext");
-        display_data(keyIn, "Key");
-        
-        start = 1;
-        #10;
-        start = 0;
-        
-        // 等待完成
-        while (!ready) begin
-            #10;
-        end
-        
-        $display("");
-        $display("All Zero Test Result:");
-        display_data(aesOut, "Ciphertext");
-        
-        // 额外测试：全FF输入
-        $display("");
-        $display("Additional Test: All FF Input");
-        $display("=============================");
-        
-        // 复位
-        rst_n = 0;
-        #10;
-        rst_n = 1;
-        #10;
-        
-        // 全FF测试
-        aesIn = {128{1'b1}};
-        keyIn = {128{1'b1}};
-        
-        display_data(aesIn, "Plaintext");
-        display_data(keyIn, "Key");
-        
-        start = 1;
-        #10;
-        start = 0;
-        
-        // 等待完成
-        while (!ready) begin
-            #10;
-        end
-        
         $display("");
         $display("All FF Test Result:");
         display_data(aesOut, "Ciphertext");

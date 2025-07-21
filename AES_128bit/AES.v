@@ -63,18 +63,18 @@ assign keyregsignal = key_reg; //将轮密钥的输出信号赋值给wire
                 //补充key的更新逻辑
                 key_reg <= keyupdatesignal; //更新轮密钥
             end
-            else if(roundcount<4'b1001) begin //第1到第九轮应顺序完成：字节代换，行移位，列混合，轮密钥加
+            else if(roundcount<4'b1010) begin //第1到第九轮应顺序完成：字节代换，行移位，列混合，轮密钥加
                 aes_reg <= MixColumnOut^keyregsignal; //轮密钥加
                 roundcount <= roundcount + 1; //轮计数器加1
                 key_reg <= keyupdatesignal; //更新轮密钥
             end    
-            else if(roundcount==4'b1001) begin
+            else if(roundcount==4'b1010) begin
                 aes_reg <= rowshiftOut^keyregsignal; //轮密钥加
-                roundcount <= 4'b1010; //进入输出ready的状态
+                roundcount <= 4'b1011; //进入输出ready的状态
             end
                 
         end                                          
-assign ready = (roundcount==4'b1010)?1:0; //当轮计数器为1011时，表示AES加密完成
+assign ready = (roundcount==4'b1011)?1:0; //当轮计数器为1011时，表示AES加密完成
 //进行字节代换
 Byte_transform Byte_transform_inst (
     .aesIn(aesregsignal), //输入的128位明文
