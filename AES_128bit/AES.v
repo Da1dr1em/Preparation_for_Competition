@@ -75,6 +75,7 @@ assign keyregsignal = key_reg; //将轮密钥的输出信号赋值给wire
                 
         end                                          
 assign ready = (roundcount==4'b1011)?1:0; //当轮计数器为1011时，表示AES加密完成
+assign aesOut = (ready)?aes_reg:128'b0; //当ready为1时，输出密文，否则输出0
 //进行字节代换
 Byte_transform Byte_transform_inst (
     .aesIn(aesregsignal), //输入的128位明文
