@@ -1,0 +1,4 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/Working/Preparation_for_Competition/DSC/DSC_Encode/RGB_tb.v" into library work
+INFO: [VRFC 10-311] analyzing module RGB_to_YUV_tb
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/Working/Preparation_for_Competition/DSC/DSC_Encode/RGB_to_YUV.v" into library work
+INFO: [VRFC 10-311] analyzing module RGB_to_YUV

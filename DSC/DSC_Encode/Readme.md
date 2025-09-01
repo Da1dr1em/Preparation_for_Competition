@@ -119,7 +119,7 @@ BP计算较为复杂，先不解释
 |**p0**|**p1**|**p2**|...|...|...|
 
 
-MPP预测计算方法如式所示，其中 prevRecon 表示重建像素值，cpntBitDepth 表示当前分量位深。
+MPP预测计算方法如式所示，其中 prevRecon 表示重建像素值(英文翻译过来就是上一个重建值)，cpntBitDepth 表示当前分量位深。
 $$
 p = ((1<<(cnptBitDepth-1))+prevRecon\  \&\  (1<<q_l)-1)
 $$
