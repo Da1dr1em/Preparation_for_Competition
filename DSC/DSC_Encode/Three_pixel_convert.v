@@ -23,17 +23,21 @@
 //                         
 //----------------------------------------------------------------------------------------
 //****************************************************************************************//
-//一次处理三个像素，像素的RGB构成为{P2,P1,P0}
-module sanxiangsu(
-    input                               clk                        ,
-    input                               rst_n                      ,
+//一次处理三个像素，像素的RGB构成为{P0,P1,P2}
+//现在需要添加的功能：表示转换开始的标志信号
+//表示输出图像第一行的标志信号(1980个像素为一行)
+//表示输出图像每行第一组像素的标志信号
+
+module Three_pixel_convert(
+    input clk,
+    input rst_n,
     input [1:24] din_data_R,din_data_G,din_data_B,
     output [1:24] Y_data,
-    output [1:27] Co_data,Cg_data                    
+    output [1:27] Co_data,Cg_data                 
 );
+
+
 YCoCgR u_YCoCgR_bit1(
-    .clk        (clk            ),
-    .rst_n      (rst_n          ),
     .din_data_R (din_data_R[1:8]),
     .din_data_G (din_data_G[1:8]),
     .din_data_B (din_data_B[1:8]),
@@ -42,8 +46,6 @@ YCoCgR u_YCoCgR_bit1(
     .Cg_data    (Cg_data[1:9]   )
 );
 YCoCgR u_YCoCgR_bit2(
-    .clk        (clk            ),
-    .rst_n      (rst_n          ),
     .din_data_R (din_data_R[9:16]),
     .din_data_G (din_data_G[9:16]),
     .din_data_B (din_data_B[9:16]),
@@ -52,8 +54,6 @@ YCoCgR u_YCoCgR_bit2(
     .Cg_data    (Cg_data[10:18]   )
 );
 YCoCgR u_YCoCgR_bit3(
-    .clk        (clk            ),
-    .rst_n      (rst_n          ),
     .din_data_R (din_data_R[17:24]),
     .din_data_G (din_data_G[17:24]),
     .din_data_B (din_data_B[17:24]),

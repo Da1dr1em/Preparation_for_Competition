@@ -26,8 +26,6 @@
 //本模块是为了实现单个像素的转换
 //已完成仿真验证
 module YCoCgR(
-    input                               clk                        ,
-    input                               rst_n                      ,
     input [1:8] din_data_R,din_data_G,din_data_B,
     output [1:8] Y_data,
     output [1:9] Co_data,Cg_data
